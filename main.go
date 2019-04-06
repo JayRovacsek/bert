@@ -10,14 +10,52 @@ import (
 	"strings"
 	"time"
 
+	"fyne.io/fyne"
+	"fyne.io/fyne/app"
+	"fyne.io/fyne/widget"
 	"github.com/go-vgo/robotgo"
 )
 
 func main() {
-	fmt.Println("Clicking is not fun. Let's avoid it.")
-	minInterval, maxInterval, err := getUserClickInputs()
+	a := app.New()
+	loadWindow(a)
+}
 
-	thirdClick := checkIfThirdClickRequired()
+func loadWindow(app fyne.App) {
+	w := app.NewWindow("Application")
+
+	thirdClick := false
+
+	minimum := widget.NewEntry()
+	minimum.SetPlaceHolder("Minimum Time")
+	maximum := widget.NewEntry()
+	maximum.SetPlaceHolder("Maximum Time")
+	check := widget.NewCheck("Third Click", func(on bool) { thirdClick = on })
+
+	form := &widget.Form{
+		OnCancel: func() {
+			w.Close()
+		},
+		OnSubmit: func() {
+			clicker(minimum.Text, maximum.Text, thirdClick)
+		},
+	}
+
+	form.Append("Minimum", minimum)
+	form.Append("Maximum", maximum)
+	form.Append("", check)
+	w.SetContent(form)
+	w.Show()
+
+	w.ShowAndRun()
+}
+
+func clicker(min string, max string, thirdClick bool) {
+	fmt.Println("Clicking is not fun. Let's avoid it.")
+	// minInterval, maxInterval, err := getUserClickInputs()
+	minInterval, maxInterval, err := validateInput(min, max)
+
+	// thirdClick := checkIfThirdClickRequired()
 
 	if err != nil {
 		fmt.Printf("An error occured: %v", err.Error())
@@ -69,6 +107,21 @@ func getUserClickInputs() (float64, float64, error) {
 	max, _ := strconv.ParseFloat(strings.TrimSpace(temp), 64)
 
 	s = append(s, min, max)
+
+	sort.Float64s(s)
+
+	return s[0], s[1], err
+}
+
+func validateInput(min string, max string) (float64, float64, error) {
+	var s []float64
+	var err error
+
+	minF, _ := strconv.ParseFloat(strings.TrimSpace(min), 64)
+
+	maxF, _ := strconv.ParseFloat(strings.TrimSpace(max), 64)
+
+	s = append(s, minF, maxF)
 
 	sort.Float64s(s)
 
