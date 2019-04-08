@@ -10,6 +10,9 @@ import (
 	"strings"
 	"time"
 
+	"go-bert/event"
+	Handle "go-bert/handle"
+
 	"fyne.io/fyne"
 	"fyne.io/fyne/app"
 	"fyne.io/fyne/widget"
@@ -24,38 +27,54 @@ func main() {
 func loadWindow(app fyne.App) {
 	w := app.NewWindow("Application")
 
-	thirdClick := false
+	doubleClick := false
 
 	minimum := widget.NewEntry()
 	minimum.SetPlaceHolder("Minimum Time")
 	maximum := widget.NewEntry()
 	maximum.SetPlaceHolder("Maximum Time")
-	check := widget.NewCheck("Third Click", func(on bool) { thirdClick = on })
+	exitKey := widget.NewEntry()
+	exitKey.SetPlaceHolder("q")
+	exitKey.SetText("q")
+
+	check := widget.NewCheck("Double Click", func(on bool) { doubleClick = on })
 
 	form := &widget.Form{
 		OnCancel: func() {
 			w.Close()
 		},
 		OnSubmit: func() {
-			clicker(minimum.Text, maximum.Text, thirdClick)
+			clicker(minimum.Text, maximum.Text, doubleClick, rune(exitKey.Text[0]))
 		},
 	}
 
 	form.Append("Minimum", minimum)
 	form.Append("Maximum", maximum)
+	form.Append("", exitKey)
+
 	form.Append("", check)
+	form.Append("Exit Key", exitKey)
 	w.SetContent(form)
 	w.Show()
 
 	w.ShowAndRun()
 }
 
-func clicker(min string, max string, thirdClick bool) {
+func runEvents(events []event.Event) {
+	for i, event := range events {
+		success, err := event.Run(i)
+		Handle.Error(err)
+		fmt.Printf("Success on event %v: %v\n", i, success)
+
+	}
+}
+
+func clicker(min string, max string, doubleClick bool, exitKey rune) {
 	fmt.Println("Clicking is not fun. Let's avoid it.")
 	// minInterval, maxInterval, err := getUserClickInputs()
 	minInterval, maxInterval, err := validateInput(min, max)
 
-	// thirdClick := checkIfThirdClickRequired()
+	// doubleClick := checkIfdoubleClickRequired()
 
 	if err != nil {
 		fmt.Printf("An error occured: %v", err.Error())
@@ -70,7 +89,12 @@ func clicker(min string, max string, thirdClick bool) {
 	fmt.Printf("Entered min: %v, Maximum: %v\n", minInterval, maxInterval)
 	minDuration, maxDuration := parseDurations(minInterval, maxInterval)
 
+	quit := robotgo.AddEvent(string(exitKey))
+
 	for {
+		if quit {
+			os.Exit(0)
+		}
 		fmt.Printf("Sleeping between %v and %v\n", minDuration, maxDuration)
 		r := minInterval + rand.Float64()*(maxInterval-minInterval)
 		sleep := time.Duration(r) * time.Second
@@ -80,9 +104,9 @@ func clicker(min string, max string, thirdClick bool) {
 		fmt.Printf("Current mouse position: x:%v y:%v\n", x, y)
 		robotgo.MouseClick("left", true)
 		fmt.Println(fmt.Sprintf("Clicked at: %v, %v", x, y))
-		if thirdClick {
-			fmt.Println(fmt.Sprintf("Third click: %v", thirdClick))
-			r := 0.5 + rand.Float64()*0.5
+		if doubleClick {
+			fmt.Println(fmt.Sprintf("Third click: %v", doubleClick))
+			r := 0.8 + rand.Float64()*0.8
 			sleep := time.Duration(r) * time.Second
 			time.Sleep(sleep)
 			fmt.Println(fmt.Sprintf("Ended up sleeping for the third clicker: %v seconds", r))
@@ -134,7 +158,7 @@ func parseDurations(min float64, max float64) (time.Duration, time.Duration) {
 	return minDuration, maxDuration
 }
 
-func checkIfThirdClickRequired() bool {
+func checkIfdoubleClickRequired() bool {
 	for {
 		fmt.Printf("Do you need the third click? [Y/N]")
 		reader := bufio.NewReader(os.Stdin)
