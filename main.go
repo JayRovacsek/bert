@@ -10,9 +10,6 @@ import (
 	"strings"
 	"time"
 
-	"go-bert/event"
-	Handle "go-bert/handle"
-
 	"fyne.io/fyne"
 	"fyne.io/fyne/app"
 	"fyne.io/fyne/widget"
@@ -44,7 +41,7 @@ func loadWindow(app fyne.App) {
 			w.Close()
 		},
 		OnSubmit: func() {
-			clicker(minimum.Text, maximum.Text, doubleClick, rune(exitKey.Text[0]))
+			clicker(minimum.Text, maximum.Text, doubleClick, rune(exitKey.Text[0]), 0)
 		},
 	}
 
@@ -60,16 +57,8 @@ func loadWindow(app fyne.App) {
 	w.ShowAndRun()
 }
 
-func runEvents(events []event.Event) {
-	for i, event := range events {
-		success, err := event.Run(i)
-		Handle.Error(err)
-		fmt.Printf("Success on event %v: %v\n", i, success)
+func clicker(min string, max string, doubleClick bool, exitKey rune, duration time.Duration) {
 
-	}
-}
-
-func clicker(min string, max string, doubleClick bool, exitKey rune) {
 	fmt.Println("Clicking is not fun. Let's avoid it.")
 	// minInterval, maxInterval, err := getUserClickInputs()
 	minInterval, maxInterval, err := validateInput(min, max)

@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"fyne.io/fyne"
-	robot "github.com/go-vgo/robotgo"
 )
 
 const (
@@ -13,6 +12,7 @@ const (
 	right
 )
 
+// Event struct to define components of an event
 type Event struct {
 	x          int
 	xDeviance  [2]int
@@ -31,11 +31,9 @@ type click struct {
 	button int
 }
 
+// Run method for executing events
 func (e Event) Run(i int) (bool, error) {
-	fmt.Println(fmt.Sprintf("Running event: %v. Click: %v, Keypress: %v, Mousebounds: x: %v, y: %v", i, e.click, e.keyPress, e.xDeviance, e.yDeviance))
-	pid := robot.ActivePID
-
-	fmt.Println(pid)
+	fmt.Println(fmt.Sprintf("Running event: %v. Click: %v, Keypress: %v, Mouse deviance: x: %v, y: %v", i, e.click, e.keyPress, e.xDeviance, e.yDeviance))
 
 	return true, nil
 }
