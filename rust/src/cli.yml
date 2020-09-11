@@ -1,0 +1,17 @@
+name: bertrs
+version: "0.1"
+author: jrovacsek <jay@rovacsek.com>
+about: Bert! Feed me!
+args:
+    - min:
+        short: m
+        long: min
+        about: Sets the minimum iteration time
+        required: true
+        takes_value: true
+    - max:
+        short: x
+        long: max
+        about: Sets the maximum iteration time
+        required: true
+        takes_value: true
